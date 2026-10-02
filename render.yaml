@@ -1,0 +1,14 @@
+# Render Blueprint for the public demo link. Free plan: the server sleeps when idle,
+# and its disk resets on every deploy or restart, so entries are a demo that resets.
+services:
+  - type: web
+    name: ten-prompts-ago
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /
+    envVars:
+      # Required on any public host: gives each visitor their own list.
+      - key: PUBLIC_DEMO
+        value: "1"

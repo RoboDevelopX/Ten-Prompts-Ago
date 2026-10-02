@@ -27,6 +27,10 @@ Set `PUBLIC_DEMO=1` when the app is hosted for other people. Each browser then g
 PUBLIC_DEMO=1 gunicorn app:app
 ```
 
+## Deploy the public demo on Render
+
+[`render.yaml`](render.yaml) describes the service, including `PUBLIC_DEMO=1`. In the [Render dashboard](https://dashboard.render.com), choose **New → Blueprint**, connect this GitHub repository, and apply it. The free plan sleeps when nobody is using it, so the first visit can take up to a minute, and entries reset on every deploy or restart.
+
 ## Run the tests
 
 ```bash
