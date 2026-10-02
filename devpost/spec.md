@@ -49,8 +49,8 @@ Open http://127.0.0.1:5000. No API keys or accounts. The database file is create
 
 **Public link (learner wants one for their resume):** deployed in `6-ship` to a free Python host, started with `gunicorn app:app`. Recommended host: **Render** free web service (https://render.com/docs/free), deployed straight from the GitHub repo. Learner creates the host account; nothing is deployed without them.
 - Free hosts wipe local files on restart or redeploy, so the public SQLite file is a **demo that resets**; the page says so in a small footer note.
-- **Each visitor gets their own list** (learner choice): on first visit the app gives the browser an anonymous random id in a cookie, and every entry is saved with that id. No login. Locally this is invisible: your browser just has one id.
-- Set `PUBLIC_DEMO=1` on the host to show the "demo, entries reset" footer note.
+- **Each visitor gets their own list** (learner choice): with `PUBLIC_DEMO=1` set on the host, the app gives each browser an anonymous random id in a cookie on its first visit, and every entry is saved with that id. No login. Locally (no `PUBLIC_DEMO`), there is one owner, so every browser on your machine sees the same list.
+- `PUBLIC_DEMO=1` also shows the "demo, entries reset" footer note and marks the cookie Secure behind the host's HTTPS proxy.
 
 ## Look and Feel
 From `prd.md > Look and Feel` ("similar to the design of Apple's website").
@@ -70,7 +70,7 @@ Creates the app, opens the database, defines the routes:
 - `POST /entries/<id>/edit`: save an edit. `POST /entries/<id>/delete`: delete. Implements `prd.md > Editing and deleting an entry`.
 - `GET /export/CONTEXT.md`: download the file (`Content-Disposition: attachment; filename=CONTEXT.md`). With no entries, redirects to `/?export=1#export`, which shows the empty message. Implements `prd.md > Exporting CONTEXT.md`.
 Validation: collapses line breaks and repeated spaces to single spaces (each entry is one line in the export); sentence max 280 characters, reason max 500; sentence and reason required; type must be `decision` or `bug`; unknown ids (or another visitor's ids) return 404.
-**Visitor id:** before each request, read the `tpa_visitor` cookie; if missing, create a random id (`uuid4`) and set it on the response (HttpOnly, SameSite=Lax, one year). Every database call is scoped to that id. Implements the learner's per-visitor choice.
+**Visitor id (public demo only):** when `PUBLIC_DEMO=1`, before each request read the `tpa_visitor` cookie; if it's missing or not a 32-character hex id, create a random id (`uuid4().hex`) and set it on the response (HttpOnly, SameSite=Lax, Secure over HTTPS, one year). A form post that arrives without a valid cookie (for example, auto-submitted from another site, which SameSite=Lax strips) is redirected to the page and writes nothing; ids are only handed out on page views. Locally every request uses the fixed owner `local`. Every database call is scoped to the owner. Implements the learner's per-visitor choice.
 
 ### Storage (`db.py`)
 Small helpers around `sqlite3`: `init_db()`, `list_entries(owner)`, `add_entry(owner, ...)`, `get_entry(owner, id)`, `update_entry(owner, id, ...)`, `delete_entry(owner, id)`; every query filters by `owner`. Creates the table on startup if missing. Database path comes from the `DATABASE_PATH` environment variable, defaulting to `instance/ten_prompts_ago.db`.

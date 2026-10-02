@@ -19,6 +19,14 @@ flask --app app run --debug
 
 Open http://127.0.0.1:5000. Entries are saved in `instance/ten_prompts_ago.db`, created on first run.
 
+## Public demo mode
+
+Set `PUBLIC_DEMO=1` when the app is hosted for other people. Each browser then gets its own private list through an anonymous cookie (no login), and the footer notes that entries reset when the server restarts. On a host, start it with:
+
+```bash
+PUBLIC_DEMO=1 gunicorn app:app
+```
+
 ## Run the tests
 
 ```bash
@@ -29,4 +37,5 @@ python -m pytest
 
 - **Flask** serves one page and handles the form posts (`app.py`).
 - **SQLite** stores entries in a single file (`db.py`).
-- **Plain HTML and CSS** in `templates/index.html` and `static/style.css`, styled after apple.com.
+- **`context_export.py`** turns your entries into the `CONTEXT.md` text: an instruction line, then "Decisions" and "Don't repeat these."
+- **Plain HTML and CSS** in `templates/index.html` and `static/style.css`, styled after apple.com, plus a little JavaScript in `static/app.js` for Copy and the delete prompt.
