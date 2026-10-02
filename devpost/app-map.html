@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ten Prompts Ago: App Map</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f7;
+    --text: #1d1d1f;
+    --secondary: #6e6e73;
+    --hairline: #d2d2d7;
+    --accent: #0071e3;
+    --code-bg: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --surface: #1d1d1f;
+      --text: #f5f5f7;
+      --secondary: #a1a1a6;
+      --hairline: #424245;
+      --accent: #2997ff;
+      --code-bg: #000000;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 20px 64px; }
+  h1 { margin: 0; font-size: 44px; line-height: 1.1; letter-spacing: -0.01em; }
+  h2 { margin: 48px 0 12px; font-size: 26px; line-height: 1.2; }
+  h3 { margin: 0 0 6px; font-size: 19px; }
+  p { margin: 0 0 12px; }
+  a { color: var(--accent); }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  .lede { color: var(--secondary); font-size: 21px; line-height: 1.4; margin-top: 12px; }
+  .snapshot { color: var(--secondary); font-size: 14px; margin-top: 16px; }
+  code, pre {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+  }
+  code { background: var(--surface); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+  pre {
+    margin: 12px 0 0;
+    padding: 14px 16px;
+    background: var(--code-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    overflow-x: auto;
+    line-height: 1.55;
+  }
+  pre code { background: none; padding: 0; }
+  .card { background: var(--surface); border-radius: 18px; padding: 22px 24px; margin-top: 16px; }
+  .pieces { margin: 0; padding-left: 20px; }
+  .pieces li { margin: 6px 0; }
+  figure { margin: 16px 0 0; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { color: var(--secondary); font-size: 14px; margin-top: 8px; }
+  .svg-box { fill: var(--bg); stroke: var(--hairline); stroke-width: 1.5; }
+  .svg-box.accent { stroke: var(--accent); stroke-width: 2; }
+  .svg-title { fill: var(--text); font-size: 15px; font-weight: 600; font-family: inherit; }
+  .svg-note { fill: var(--secondary); font-size: 12.5px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .svg-arrow { stroke: var(--secondary); stroke-width: 1.5; fill: none; }
+  .svg-head { fill: var(--secondary); }
+  ol.route { list-style: none; margin: 0; padding: 0; counter-reset: stop; }
+  ol.route > li { counter-increment: stop; position: relative; padding-left: 48px; }
+  ol.route > li::before {
+    content: counter(stop);
+    position: absolute; left: 0; top: 22px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-weight: 600; text-align: center; line-height: 32px;
+  }
+  .where { color: var(--secondary); font-size: 15px; margin-bottom: 8px; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 16px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--hairline); }
+  th { color: var(--secondary); font-size: 14px; font-weight: 600; }
+  td:first-child { width: 42%; }
+  .tag { display: inline-block; font-size: 13px; color: var(--secondary); border: 1px solid var(--hairline); border-radius: 980px; padding: 1px 10px; margin-left: 6px; vertical-align: 2px; }
+  @media (max-width: 600px) {
+    h1 { font-size: 34px; }
+    ol.route > li { padding-left: 0; }
+    ol.route > li::before { position: static; display: inline-block; margin-bottom: 6px; }
+    td:first-child { width: auto; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Ten Prompts Ago: App Map</h1>
+    <p class="lede">A short guide to where things live, following one real action from the button you click to the file your agent reads.</p>
+    <p class="snapshot">Snapshot of the code at commit <code>709424f</code> (2 October 2026). If the code changes later, this map can drift; the files and function names are the reliable anchors.</p>
+  </header>
+
+  <section aria-labelledby="overview">
+    <h2 id="overview">What the app is</h2>
+    <p>You log the decisions you make while building with an AI coding agent and the bugs you've already fixed, each as one sentence plus a reason. The app turns them into a <code>CONTEXT.md</code> you paste into your agent at the start of a session, so it stops undoing settled choices. It is one Flask page backed by one SQLite file.</p>
+    <ul class="pieces">
+      <li><code>app.py</code>: the Flask app. Routes, form checks, and who owns which entries.</li>
+      <li><code>db.py</code>: every SQLite query. One <code>entries</code> table.</li>
+      <li><code>context_export.py</code>: turns entries into the <code>CONTEXT.md</code> text.</li>
+      <li><code>templates/index.html</code>: the single page (add form, list, edit, export).</li>
+      <li><code>static/style.css</code> and <code>static/app.js</code>: the Apple-style look, the Copy button, and the delete prompt.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="action">
+    <h2 id="action">One action, end to end: Export CONTEXT.md</h2>
+    <p>This is the heart of the app, so it's the action worth knowing by heart.</p>
+    <figure>
+      <svg viewBox="0 0 720 330" role="img" aria-labelledby="diagram-title diagram-desc">
+        <title id="diagram-title">How Export CONTEXT.md flows through the code</title>
+        <desc id="diagram-desc">Clicking Export loads the page with export=1. app.py's render_page reads this visitor's entries from SQLite through db.list_entries, then context_export.build_context writes the text. templates/index.html shows it in a preview with Copy, handled by static/app.js, and Download, which calls app.py's download route.</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="svg-head"/>
+          </marker>
+        </defs>
+        <rect class="svg-box accent" x="10" y="20" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="26" y="50">You click Export</text>
+        <text class="svg-note" x="26" y="72">GET /?export=1</text>
+
+        <rect class="svg-box" x="260" y="20" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="276" y="50">app.py</text>
+        <text class="svg-note" x="276" y="72">render_page()</text>
+
+        <rect class="svg-box" x="510" y="20" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="526" y="50">db.py + SQLite</text>
+        <text class="svg-note" x="526" y="72">list_entries()</text>
+
+        <rect class="svg-box" x="510" y="140" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="526" y="170">context_export.py</text>
+        <text class="svg-note" x="526" y="192">build_context()</text>
+
+        <rect class="svg-box accent" x="260" y="140" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="276" y="170">You see the preview</text>
+        <text class="svg-note" x="276" y="192">templates/index.html</text>
+
+        <rect class="svg-box accent" x="10" y="250" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="26" y="280">Copy</text>
+        <text class="svg-note" x="26" y="302">static/app.js</text>
+
+        <rect class="svg-box accent" x="260" y="250" width="200" height="70" rx="14"/>
+        <text class="svg-title" x="276" y="280">Download</text>
+        <text class="svg-note" x="276" y="302">app.py download()</text>
+
+        <path class="svg-arrow" d="M210,55 H256" marker-end="url(#arrow)"/>
+        <path class="svg-arrow" d="M460,55 H506" marker-end="url(#arrow)"/>
+        <path class="svg-arrow" d="M610,90 V136" marker-end="url(#arrow)"/>
+        <path class="svg-arrow" d="M510,175 H464" marker-end="url(#arrow)"/>
+        <path class="svg-arrow" d="M300,210 C300,232 110,226 110,246" marker-end="url(#arrow)"/>
+        <path class="svg-arrow" d="M360,210 V246" marker-end="url(#arrow)"/>
+      </svg>
+      <figcaption>The same text feeds the preview, Copy, and Download, so what you see is exactly what your agent gets.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="route">
+    <h2 id="route">A route through the code <span class="tag">reference route</span></h2>
+    <p>Three stops for the Export action, in the order the request travels. This route was prepared for you to follow on your own; it wasn't toured live.</p>
+    <ol class="route">
+      <li>
+        <div class="card">
+          <h3>The button and the preview</h3>
+          <p class="where"><code>templates/index.html</code>, search for <code>id="export"</code></p>
+          <p>The Export button is just a link back to the same page with <code>?export=1</code>. When the page comes back with text in <code>context</code>, the same section shows it in <code>&lt;pre id="context-preview"&gt;</code> with Copy and Download; when there's nothing, it shows "Nothing to export yet."</p>
+          <details>
+            <summary>Show the snippet</summary>
+<pre><code>{% if not export_open %}
+  &lt;a class="button primary" href="{{ url_for('index', export=1) }}#export"&gt;Export CONTEXT.md&lt;/a&gt;
+{% elif context %}
+  &lt;pre id="context-preview" class="preview" ...&gt;{{ context }}&lt;/pre&gt;
+  ... Copy (data-copy-target="context-preview") and Download ...
+{% else %}
+  &lt;p class="empty-export" role="status"&gt;Nothing to export yet. ...&lt;/p&gt;
+{% endif %}</code></pre>
+          </details>
+        </div>
+      </li>
+      <li>
+        <div class="card">
+          <h3>The route that gathers your entries</h3>
+          <p class="where"><code>app.py</code>, functions <code>index()</code>, <code>render_page()</code> and <code>download()</code></p>
+          <p><code>render_page()</code> loads only this visitor's entries with <code>db.list_entries(database(), g.owner)</code>, then calls <code>build_context(entries)</code> only when the export is open. <code>download()</code> sends the same text as a file named <code>CONTEXT.md</code>, or sends you back to the "Nothing to export yet" message if the list is empty. <code>g.owner</code> is set by <code>identify_visitor()</code>: <code>"local"</code> on your machine, an anonymous cookie id on the public demo.</p>
+        </div>
+      </li>
+      <li>
+        <div class="card">
+          <h3>The text your agent reads</h3>
+          <p class="where"><code>context_export.py</code>, function <code>build_context()</code>, constants <code>INTRO</code> and <code>SECTIONS</code></p>
+          <p>It writes a heading and one instruction line, then "Decisions" and "Don't repeat these," skipping a group with nothing in it. Each entry becomes one line ending in its reason. <code>as_sentence()</code> makes sure each part ends like a sentence. It returns <code>None</code> for no entries, which is what triggers the empty message.</p>
+          <details>
+            <summary>Show an example of the output</summary>
+<pre><code># Project context
+
+Read this before writing any code. These are settled. Follow them unless I explicitly change one.
+
+## Decisions
+- Use SQLite, not Postgres. Why: One user, no server to run.
+
+## Don't repeat these
+- The login page crept back in after a refactor. Do not reintroduce this. Why: No login for v1.</code></pre>
+          </details>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="change">
+    <h2 id="change">To change this, start here</h2>
+    <table>
+      <thead><tr><th scope="col">If you want to change…</th><th scope="col">Start here</th></tr></thead>
+      <tbody>
+        <tr><td>The wording of <code>CONTEXT.md</code> (intro line, section names, "Do not reintroduce this.")</td><td><code>context_export.py</code>: <code>INTRO</code> and <code>SECTIONS</code></td></tr>
+        <tr><td>Character limits or the error messages on the form</td><td><code>app.py</code>: <code>TEXT_MAX</code>, <code>REASON_MAX</code>, <code>read_entry_form()</code></td></tr>
+        <tr><td>Colors, fonts, spacing</td><td><code>static/style.css</code>: the <code>:root</code> color tokens at the top</td></tr>
+        <tr><td>Headline, tagline, button labels, the hint under Export</td><td><code>templates/index.html</code></td></tr>
+        <tr><td>A new field on each entry (for example, a tag)</td><td><code>db.py</code> <code>SCHEMA</code>, then <code>app.py</code> <code>read_entry_form()</code>, the <code>entry_fields</code> macro in <code>templates/index.html</code>, and <code>build_context()</code></td></tr>
+        <tr><td>How the public demo separates visitors</td><td><code>app.py</code>: <code>identify_visitor()</code> and <code>remember_visitor()</code>; <code>PUBLIC_DEMO</code> is set in <code>render.yaml</code></td></tr>
+        <tr><td>Checks that prove a change still works</td><td><code>tests/</code>, run with <code>python -m pytest</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="practice">
+    <h2 id="practice">A practice to reuse</h2>
+    <div class="card">
+      <p><strong>Test the riskiest assumption as soon as there's something to test it with.</strong> The whole app rests on one belief: an agent will actually follow a written <code>CONTEXT.md</code>. <code>devpost/spec.md</code> named that as the open question under "Decisions and Open Issues," and the checklist made it part of slice 2's verification, right after export first worked and before edit, delete, or hosting.</p>
+      <p>The check (<code>devpost/context-experiment.md</code>) gave six fresh agents a request that tempts them to add logins. With no context, both added logins. With either a notes dump or the exported file, all four named the no-login decision and asked first. That confirmed the core idea and also corrected an assumption in the original plan, that a plain dump gets ignored, which is recorded under "Revisions" in <code>devpost/checklist.md</code>.</p>
+      <p>On another project: write down the one assumption that would sink the idea if it were wrong, plan the cheapest check that could prove it wrong, and run it as soon as the first working slice exists. Record the result next to the plan, even when it says your plan was partly wrong.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="run">
+    <h2 id="run">Run it again</h2>
+    <p>From the project folder, with Python 3.11 or newer:</p>
+<pre><code>python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+flask --app app run --debug</code></pre>
+    <p>Then open <a href="http://127.0.0.1:5000">http://127.0.0.1:5000</a>. Run the tests with <code>python -m pytest</code>. The <code>README.md</code> also covers public demo mode and deploying with <code>render.yaml</code>.</p>
+  </section>
+</main>
+</body>
+</html>

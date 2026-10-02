@@ -51,6 +51,7 @@ Open http://127.0.0.1:5000. No API keys or accounts. The database file is create
 - Free hosts wipe local files on restart or redeploy, so the public SQLite file is a **demo that resets**; the page says so in a small footer note.
 - **Each visitor gets their own list** (learner choice): with `PUBLIC_DEMO=1` set on the host, the app gives each browser an anonymous random id in a cookie on its first visit, and every entry is saved with that id. No login. Locally (no `PUBLIC_DEMO`), there is one owner, so every browser on your machine sees the same list.
 - `PUBLIC_DEMO=1` also shows the "demo, entries reset" footer note and marks the cookie Secure behind the host's HTTPS proxy.
+- `render.yaml` in the repo root (added in `6-ship`) describes the Render service, including `PUBLIC_DEMO=1`; deploy it with Render's **New → Blueprint**.
 
 ## Look and Feel
 From `prd.md > Look and Feel` ("similar to the design of Apple's website").

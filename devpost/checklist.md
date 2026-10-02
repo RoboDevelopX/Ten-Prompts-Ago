@@ -39,7 +39,7 @@ Build mode: learn (learner: "I have forgotten parts of it since I had done it lo
   Learner check: Edit an entry's reason and switch a Decision to a Fixed bug, delete another (cancel the prompt once first), then Export and confirm the file matches the list.
   Commit: `Edit and delete entries`
 
-- [ ] **4. Each visitor on the public link gets their own list**
+- [x] **4. Each visitor on the public link gets their own list**
   Becomes usable: Two different browsers see two separate lists; neither can see, edit, or delete the other's entries. With `PUBLIC_DEMO=1`, a footer note says it's a demo whose entries reset.
   Why now: Only matters once the app is public, and it wraps every route that already works, so it lands last and is checked against all of them.
   PRD ref: `prd.md > States and Boundaries` (who can see what)
@@ -52,23 +52,23 @@ Build mode: learn (learner: "I have forgotten parts of it since I had done it lo
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (list plus export, the kernel). Learner reviewed screenshots and the agent check: "it is good. I wouldn't change anything."
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Final kick-the-tires exploration and feedback completed — after slice 4, the learner was asked to try two windows with `PUBLIC_DEMO=1` and the whole flow (add, edit, delete, export, copy, download, odd inputs) and replied: "Yes, it is good." No changes requested.
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship. Nothing needed changing; learner confirmed ("Yes, it is good") with 54 tests passing and `gunicorn app:app` checked with `PUBLIC_DEMO=1`.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: not started
-Route and stops: not started
-Edit outcome: not started
-Reflection: not started
-Activity mode: not started
+Activity and evidence: prior practice connected. Slice 2's agent check (`devpost/context-experiment.md`) tested the spec's open question as soon as export worked: with no context, agents added logins; with the decisions written down, they named the no-login decision and checked first. It also corrected the plan's assumption that a dump gets ignored (see Revisions). The app map's "A practice to reuse" carries this.
+Route and stops: reference route in the app map, not toured live: `templates/index.html` (`id="export"`) → `app.py` (`render_page()`, `download()`) → `context_export.py` (`build_context()`).
+Edit outcome: not applicable; the learner is an experienced, plan-first builder and asked to move on to shipping.
+Reflection: optional transfer question offered with the wrap-up.
+Activity mode: focused alternative (prior practice), after a learn-mode build.
 
 ## Revisions
 
@@ -81,3 +81,4 @@ Activity mode: not started
 - The edit form's cursor placement is done in `static/app.js`, not with `autofocus` — browsers ignore `autofocus` when the URL has a `#fragment`, and the Edit link uses one to scroll to the entry; after a failed save the cursor goes to the field with the error.
 - Per-visitor lists apply only when `PUBLIC_DEMO=1` (the public link); running locally keeps one owner — the spec had the cookie on everywhere, but locally that would hide your own entries whenever you switched browsers or cleared cookies (for example, recording the demo in a different browser). The learner's choice was about strangers on the public link, so this keeps it exactly there.
 - On the public demo, a form post without a visitor cookie now redirects to the page instead of minting a new id — the slice 4 review showed a form auto-submitted from another site would swap the visitor's cookie and drop them into a list the other site had written to. Also pinned the test suite to local mode so `PUBLIC_DEMO=1` in the shell can't flip it. Deploy note for `6-ship`: the host must set `PUBLIC_DEMO=1`, or every visitor shares one list; a `render.yaml` that sets it removes that risk.
+- Added `render.yaml` (Render free web service, `gunicorn app:app`, `PUBLIC_DEMO=1`) and `.python-version` (3.11) for the public link, so a deploy from the repo can't fail open into one shared list. Checked by starting gunicorn with only `PORT` and `PUBLIC_DEMO=1` set, as Render does: it listened on `0.0.0.0:$PORT`, and the visitor cookie came back `Secure; HttpOnly; SameSite=Lax` behind an HTTPS proxy header.
