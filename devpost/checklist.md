@@ -29,7 +29,7 @@ Build mode: learn (learner: "I have forgotten parts of it since I had done it lo
   Learner check: Click Export, check the preview reads like instructions you'd want your agent to follow, click Copy and paste it somewhere, click Download and open the file; then clear your entries (or use a fresh browser) and confirm Export shows the "Nothing to export yet" message.
   Commit: `Export an agent-ready CONTEXT.md with copy and download`
 
-- [ ] **3. You can edit or delete an entry**
+- [x] **3. You can edit or delete an entry**
   Becomes usable: Each entry has Edit (inline form to change type, sentence, reason; Save or Cancel) and Delete (with an "are you sure?" prompt); changes show in the list and in the next export.
   Why now: Builds on a working list and export, and matters because the export must stay accurate when decisions change. Lower risk than the kernel, so it comes after it.
   PRD ref: `prd.md > Editing and deleting an entry`, `prd.md > The Core Journey` (step 4)
