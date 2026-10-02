@@ -9,7 +9,7 @@ Build mode: learn (learner: "I have forgotten parts of it since I had done it lo
 
 ## Slices
 
-- [ ] **1. You can log a decision or fixed bug and see it in the grouped list**
+- [x] **1. You can log a decision or fixed bug and see it in the grouped list**
   Becomes usable: A running Flask app with the Apple-style page; typing a sentence and reason, picking Decision or Fixed bug, and saving shows the entry at the top of its group. Entries are already saved in SQLite, so they survive a restart.
   Why now: Proves the whole path (scaffold, form, route, SQLite, template, styling) on the first slice, so every later slice has a working page to land on. SQLite is folded in here because it is the store, not a separate layer.
   PRD ref: `prd.md > The Core Journey` (steps 1-3, 7), `prd.md > Adding an entry`, `prd.md > Viewing the running list`, `prd.md > Look and Feel`
