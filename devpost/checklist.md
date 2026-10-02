@@ -1,11 +1,11 @@
 ---
 doc: checklist
-status: draft
+status: approved
 ---
 
 # Build Checklist
 
-Build mode: not chosen yet
+Build mode: learn (learner: "I have forgotten parts of it since I had done it long time back")
 
 ## Slices
 
