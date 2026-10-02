@@ -19,7 +19,7 @@ Build mode: learn (learner: "I have forgotten parts of it since I had done it lo
   Learner check: Run the app (README steps), open http://127.0.0.1:5000, add "Use SQLite, not Postgres" as a Decision with a reason and one Fixed bug, restart the app, and confirm both are still there and the page feels like the Apple-style look you pictured.
   Commit: `Log decisions and fixed bugs in a grouped list`
 
-- [ ] **2. You can export an agent-ready CONTEXT.md, copy it, or download it**
+- [x] **2. You can export an agent-ready CONTEXT.md, copy it, or download it**
   Becomes usable: Export shows the generated `CONTEXT.md` (intro line, Decisions, Don't repeat these, one imperative line plus "Why:" each) with Copy and Download; with nothing logged it shows "Nothing to export yet. Log a decision or a fixed bug first."
   Why now: This is the kernel. It comes right after the first usable list so the most important behavior, and the story's open question of whether an agent actually follows the file, gets tested early.
   PRD ref: `prd.md > Exporting CONTEXT.md`, `prd.md > The Core Journey` (steps 5-6), `prd.md > States and Boundaries` (first use)
@@ -51,7 +51,7 @@ Build mode: learn (learner: "I have forgotten parts of it since I had done it lo
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2 (list plus export, the kernel)
+- [x] Early usable behavior explored — after slice 2 (list plus export, the kernel). Learner reviewed screenshots and the agent check: "it is good. I wouldn't change anything."
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
