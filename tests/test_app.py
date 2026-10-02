@@ -175,3 +175,123 @@ def test_export_escapes_html_in_preview(client):
     assert "<img src=x" not in html
     body = client.get("/export/CONTEXT.md").get_data(as_text=True)
     assert "- <img src=x onerror=alert(1)>. Why: r.\n" in body
+
+
+def entry_id(client, text):
+    """Find an entry's id from the page by its sentence."""
+    html = client.get("/").get_data(as_text=True)
+    match = re.search(rf'<li class="entry" id="entry-(\d+)">\s*<div class="entry-body">\s*<p class="entry-text">{re.escape(text)}</p>', html)
+    assert match, f"entry {text!r} not found"
+    return int(match.group(1))
+
+
+def test_each_entry_has_edit_and_delete(client):
+    add(client, "decision", "Use SQLite", "One user")
+    eid = entry_id(client, "Use SQLite")
+    html = client.get("/").get_data(as_text=True)
+    assert f'href="/?edit={eid}#entry-{eid}"' in html
+    assert f'action="/entries/{eid}/delete"' in html
+    assert "data-confirm=" in html
+
+
+def test_edit_link_opens_inline_form_with_saved_values(client):
+    add(client, "bug", "Login page came back", "Agent forgot")
+    eid = entry_id(client, "Login page came back")
+    html = client.get(f"/?edit={eid}").get_data(as_text=True)
+    assert f'action="/entries/{eid}/edit"' in html
+    assert 'id="edit-kind-bug" name="kind" value="bug" checked' in html
+    assert 'value="Login page came back"' in html
+    assert ">Agent forgot</textarea>" in html
+    assert f'href="/#entry-{eid}">Cancel</a>' in html
+
+
+def test_edit_with_unknown_id_just_shows_the_page(client):
+    add(client, "decision", "Use SQLite", "One user")
+    response = client.get("/?edit=9999")
+    assert response.status_code == 200
+    assert "/edit\"" not in response.get_data(as_text=True)
+
+
+def test_edit_saves_changes_including_type(client):
+    add(client, "decision", "Use Postgres", "Thought we needed it")
+    eid = entry_id(client, "Use Postgres")
+    response = client.post(f"/entries/{eid}/edit", data={"kind": "bug", "text": "Postgres crept in", "reason": "One user, SQLite is enough"})
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith(f"/#entry-{eid}")
+    html = client.get("/").get_data(as_text=True)
+    assert entry_texts(html, "bug") == ["Postgres crept in"]
+    assert "Use Postgres" not in html
+    assert "No decisions yet." in html
+
+
+def test_edit_keeps_position_in_list(client):
+    add(client, "decision", "Oldest", "r")
+    add(client, "decision", "Newest", "r")
+    eid = entry_id(client, "Oldest")
+    client.post(f"/entries/{eid}/edit", data={"kind": "decision", "text": "Oldest, edited", "reason": "r"})
+    html = client.get("/").get_data(as_text=True)
+    assert entry_texts(html, "decision") == ["Newest", "Oldest, edited"]
+
+
+def test_edit_validation_keeps_form_open_and_saves_nothing(client):
+    add(client, "decision", "Use SQLite", "One user")
+    eid = entry_id(client, "Use SQLite")
+    response = client.post(f"/entries/{eid}/edit", data={"kind": "decision", "text": "Use SQLite, really", "reason": "  "})
+    html = response.get_data(as_text=True)
+    assert response.status_code == 400
+    assert f'action="/entries/{eid}/edit"' in html
+    assert 'id="edit-reason-error"' in html
+    assert 'value="Use SQLite, really"' in html
+    after = client.get("/").get_data(as_text=True)
+    assert entry_texts(after, "decision") == ["Use SQLite"]
+
+
+def test_edit_unknown_entry_is_404(client):
+    response = client.post("/entries/9999/edit", data={"kind": "decision", "text": "x", "reason": "y"})
+    assert response.status_code == 404
+
+
+def test_delete_removes_entry(client):
+    add(client, "decision", "Keep me", "r")
+    add(client, "decision", "Delete me", "r")
+    eid = entry_id(client, "Delete me")
+    response = client.post(f"/entries/{eid}/delete")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/#entries")
+    html = client.get("/").get_data(as_text=True)
+    assert entry_texts(html, "decision") == ["Keep me"]
+
+
+def test_delete_last_entry_returns_to_empty_state(client):
+    add(client, "bug", "Only one", "r")
+    client.post(f"/entries/{entry_id(client, 'Only one')}/delete")
+    assert "Nothing logged yet" in client.get("/").get_data(as_text=True)
+    assert client.get("/export/CONTEXT.md").status_code == 302
+
+
+def test_delete_unknown_entry_is_404(client):
+    assert client.post("/entries/9999/delete").status_code == 404
+
+
+def test_out_of_range_ids_are_404_not_errors(client):
+    too_big = "99999999999999999999"
+    assert client.post(f"/entries/{too_big}/delete").status_code == 404
+    assert client.post(f"/entries/{too_big}/edit", data={"kind": "decision", "text": "x", "reason": "y"}).status_code == 404
+    assert client.get(f"/?edit={too_big}").status_code == 200
+
+
+def test_delete_needs_post(client):
+    add(client, "decision", "Use SQLite", "One user")
+    eid = entry_id(client, "Use SQLite")
+    assert client.get(f"/entries/{eid}/delete").status_code == 405
+
+
+def test_export_reflects_edits_and_deletions(client):
+    add(client, "decision", "Use SQLite", "One user")
+    add(client, "bug", "Login came back", "Agent forgot")
+    client.post(f"/entries/{entry_id(client, 'Use SQLite')}/edit", data={"kind": "decision", "text": "Use SQLite, not Postgres", "reason": "One user, no server"})
+    client.post(f"/entries/{entry_id(client, 'Login came back')}/delete")
+    body = client.get("/export/CONTEXT.md").get_data(as_text=True)
+    assert "- Use SQLite, not Postgres. Why: One user, no server.\n" in body
+    assert "Login came back" not in body
+    assert "Don't repeat these" not in body

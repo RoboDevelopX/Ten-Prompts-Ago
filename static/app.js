@@ -24,3 +24,23 @@ document.addEventListener("click", async (event) => {
     if (status) status.textContent = "Press Ctrl+C (Cmd+C on a Mac) to copy the selected text.";
   }
 });
+
+// Ask before deleting an entry.
+document.addEventListener("submit", (event) => {
+  const message = event.target.dataset.confirm;
+  if (message && !window.confirm(message)) {
+    event.preventDefault();
+  }
+});
+
+// Put the cursor in the edit form. Browsers skip `autofocus` when the URL has a
+// #fragment, so focus it ourselves once the page has finished loading.
+window.addEventListener("load", () => {
+  const editField =
+    document.querySelector(".entry.editing [aria-invalid=true]") ||
+    document.querySelector(".entry.editing input[name=text]");
+  if (editField) {
+    editField.focus();
+    editField.setSelectionRange?.(editField.value.length, editField.value.length);
+  }
+});

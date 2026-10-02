@@ -98,7 +98,7 @@ One page: header (name and tagline), add form (type, sentence, reason, Save), tw
 PRD ref: `prd.md > Screens and Layout`, `prd.md > Viewing the running list`.
 
 ### Styles and script (`static/style.css`, `static/app.js`)
-`style.css` implements `Look and Feel`. `app.js` wires the Copy button (`navigator.clipboard.writeText`, label switches to "Copied" for ~2 seconds; falls back to selecting the text if the clipboard is blocked) and the delete confirmation.
+`style.css` implements `Look and Feel`. `app.js` wires the Copy button (`navigator.clipboard.writeText`, label switches to "Copied" for ~2 seconds; falls back to selecting the text if the clipboard is blocked), the delete confirmation, and puts the cursor in the inline edit form (on the field with an error, if any).
 
 ## Data Model
 One SQLite table, `entries`:

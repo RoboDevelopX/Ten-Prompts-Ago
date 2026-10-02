@@ -1,3 +1,29 @@
+{% macro entry_fields(prefix, values, errs) -%}
+        <fieldset class="segmented">
+          <legend class="visually-hidden">Type</legend>
+          <input type="radio" id="{{ prefix }}kind-decision" name="kind" value="decision" {% if values.kind == 'decision' %}checked{% endif %}>
+          <label for="{{ prefix }}kind-decision">Decision</label>
+          <input type="radio" id="{{ prefix }}kind-bug" name="kind" value="bug" {% if values.kind == 'bug' %}checked{% endif %}>
+          <label for="{{ prefix }}kind-bug">Fixed bug</label>
+        </fieldset>
+        {% if errs.kind %}<p class="field-error" role="alert">{{ errs.kind }}</p>{% endif %}
+
+        <label class="field">
+          <span class="field-label">What was decided or fixed?</span>
+          <input type="text" name="text" value="{{ values.text }}" maxlength="{{ text_max }}"
+                 placeholder="Use SQLite, not Postgres"
+                 {% if errs.text %}aria-invalid="true" aria-describedby="{{ prefix }}text-error"{% endif %}>
+        </label>
+        {% if errs.text %}<p class="field-error" id="{{ prefix }}text-error" role="alert">{{ errs.text }}</p>{% endif %}
+
+        <label class="field">
+          <span class="field-label">Why?</span>
+          <textarea name="reason" rows="2" maxlength="{{ reason_max }}"
+                    placeholder="One user, no server to run"
+                    {% if errs.reason %}aria-invalid="true" aria-describedby="{{ prefix }}reason-error"{% endif %}>{{ values.reason }}</textarea>
+        </label>
+        {% if errs.reason %}<p class="field-error" id="{{ prefix }}reason-error" role="alert">{{ errs.reason }}</p>{% endif %}
+{%- endmacro %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -17,31 +43,7 @@
     <section class="card" aria-labelledby="add-heading">
       <h2 id="add-heading">Log an entry</h2>
       <form class="entry-form" method="post" action="{{ url_for('add') }}" novalidate>
-        <fieldset class="segmented">
-          <legend class="visually-hidden">Type</legend>
-          <input type="radio" id="kind-decision" name="kind" value="decision" {% if form.kind == 'decision' %}checked{% endif %}>
-          <label for="kind-decision">Decision</label>
-          <input type="radio" id="kind-bug" name="kind" value="bug" {% if form.kind == 'bug' %}checked{% endif %}>
-          <label for="kind-bug">Fixed bug</label>
-        </fieldset>
-        {% if errors.kind %}<p class="field-error" role="alert">{{ errors.kind }}</p>{% endif %}
-
-        <label class="field">
-          <span class="field-label">What was decided or fixed?</span>
-          <input type="text" name="text" value="{{ form.text }}" maxlength="{{ text_max }}"
-                 placeholder="Use SQLite, not Postgres"
-                 {% if errors.text %}aria-invalid="true" aria-describedby="text-error"{% endif %}>
-        </label>
-        {% if errors.text %}<p class="field-error" id="text-error" role="alert">{{ errors.text }}</p>{% endif %}
-
-        <label class="field">
-          <span class="field-label">Why?</span>
-          <textarea name="reason" rows="2" maxlength="{{ reason_max }}"
-                    placeholder="One user, no server to run"
-                    {% if errors.reason %}aria-invalid="true" aria-describedby="reason-error"{% endif %}>{{ form.reason }}</textarea>
-        </label>
-        {% if errors.reason %}<p class="field-error" id="reason-error" role="alert">{{ errors.reason }}</p>{% endif %}
-
+        {{ entry_fields('', form, errors) }}
         <button type="submit" class="button primary">Save</button>
       </form>
     </section>
@@ -56,10 +58,33 @@
             {% if groups[kind] %}
               <ul class="entry-list">
                 {% for entry in groups[kind] %}
-                  <li class="entry" id="entry-{{ entry.id }}">
-                    <p class="entry-text">{{ entry.text }}</p>
-                    <p class="entry-reason"><span class="why">Why:</span> {{ entry.reason }}</p>
-                  </li>
+                  {% if entry.id == edit_id %}
+                    <li class="entry editing" id="entry-{{ entry.id }}">
+                      <form class="entry-form" method="post" action="{{ url_for('edit', entry_id=entry.id) }}" novalidate
+                            aria-label="Edit entry">
+                        {{ entry_fields('edit-', edit_form, edit_errors) }}
+                        <div class="actions">
+                          <button type="submit" class="button primary">Save</button>
+                          <a class="button secondary" href="{{ url_for('index') }}#entry-{{ entry.id }}">Cancel</a>
+                        </div>
+                      </form>
+                    </li>
+                  {% else %}
+                    <li class="entry" id="entry-{{ entry.id }}">
+                      <div class="entry-body">
+                        <p class="entry-text">{{ entry.text }}</p>
+                        <p class="entry-reason"><span class="why">Why:</span> {{ entry.reason }}</p>
+                      </div>
+                      <div class="entry-actions">
+                        <a class="text-button" href="{{ url_for('index', edit=entry.id) }}#entry-{{ entry.id }}"
+                           aria-label="Edit: {{ entry.text }}">Edit</a>
+                        <form method="post" action="{{ url_for('delete', entry_id=entry.id) }}"
+                              data-confirm="Delete this entry? It will also leave your next export.">
+                          <button type="submit" class="text-button danger" aria-label="Delete: {{ entry.text }}">Delete</button>
+                        </form>
+                      </div>
+                    </li>
+                  {% endif %}
                 {% endfor %}
               </ul>
             {% else %}

@@ -2,10 +2,13 @@
 
 import os
 
-from flask import Flask, Response, redirect, render_template, request, url_for
+from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 import db
 from context_export import build_context
+
+# SQLite's largest integer: bigger ids in a URL can't exist, so they 404 instead of erroring.
+MAX_ID = 2**63 - 1
 
 # Until each visitor gets their own list (slice 4), everything belongs to one local owner.
 LOCAL_OWNER = "local"
@@ -26,15 +29,25 @@ def create_app(config=None):
     def database():
         return app.config["DATABASE_PATH"]
 
-    def render_page(form=None, errors=None, status=200, export_open=False):
+    def render_page(form=None, errors=None, status=200, export_open=False,
+                    edit_id=None, edit_form=None, edit_errors=None):
         entries = db.list_entries(database(), LOCAL_OWNER)
         groups = {kind: [e for e in entries if e["kind"] == kind] for kind in db.KINDS}
+        if edit_id is not None and edit_form is None:
+            # Open the edit form with the entry's saved values (ignore stale ids).
+            entry = next((e for e in entries if e["id"] == edit_id), None)
+            edit_form = entry
+            if entry is None:
+                edit_id = None
         page = render_template(
             "index.html",
             groups=groups,
             total=len(entries),
             form=form or {"kind": "decision", "text": "", "reason": ""},
             errors=errors or {},
+            edit_id=edit_id,
+            edit_form=edit_form,
+            edit_errors=edit_errors or {},
             text_max=TEXT_MAX,
             reason_max=REASON_MAX,
             export_open=export_open,
@@ -44,7 +57,10 @@ def create_app(config=None):
 
     @app.get("/")
     def index():
-        return render_page(export_open=request.args.get("export") == "1")
+        return render_page(
+            export_open=request.args.get("export") == "1",
+            edit_id=request.args.get("edit", type=int),
+        )
 
     @app.post("/entries")
     def add():
@@ -52,6 +68,23 @@ def create_app(config=None):
         if errors:
             return render_page(form=form, errors=errors, status=400)
         db.add_entry(database(), LOCAL_OWNER, form["kind"], form["text"], form["reason"])
+        return redirect(url_for("index") + "#entries")
+
+    @app.post(f"/entries/<int(max={MAX_ID}):entry_id>/edit")
+    def edit(entry_id):
+        if db.get_entry(database(), LOCAL_OWNER, entry_id) is None:
+            abort(404)
+        form, errors = read_entry_form(request.form)
+        if errors:
+            return render_page(edit_id=entry_id, edit_form=form, edit_errors=errors, status=400)
+        if not db.update_entry(database(), LOCAL_OWNER, entry_id, form["kind"], form["text"], form["reason"]):
+            abort(404)
+        return redirect(url_for("index") + f"#entry-{entry_id}")
+
+    @app.post(f"/entries/<int(max={MAX_ID}):entry_id>/delete")
+    def delete(entry_id):
+        if not db.delete_entry(database(), LOCAL_OWNER, entry_id):
+            abort(404)
         return redirect(url_for("index") + "#entries")
 
     @app.get("/export/CONTEXT.md")

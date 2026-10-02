@@ -66,3 +66,34 @@ def add_entry(path, owner, kind, text, reason):
             (owner, kind, text, reason, now, now),
         )
     return cursor.lastrowid
+
+
+def get_entry(path, owner, entry_id):
+    """One of this owner's entries, or None."""
+    with closing(_connect(path)) as conn:
+        row = conn.execute(
+            "SELECT id, kind, text, reason, created_at, updated_at FROM entries"
+            " WHERE owner = ? AND id = ?",
+            (owner, entry_id),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def update_entry(path, owner, entry_id, kind, text, reason):
+    """Change one of this owner's entries. Returns False if it doesn't exist."""
+    with closing(_connect(path)) as conn, conn:
+        cursor = conn.execute(
+            "UPDATE entries SET kind = ?, text = ?, reason = ?, updated_at = ?"
+            " WHERE owner = ? AND id = ?",
+            (kind, text, reason, _now(), owner, entry_id),
+        )
+    return cursor.rowcount == 1
+
+
+def delete_entry(path, owner, entry_id):
+    """Remove one of this owner's entries. Returns False if it doesn't exist."""
+    with closing(_connect(path)) as conn, conn:
+        cursor = conn.execute(
+            "DELETE FROM entries WHERE owner = ? AND id = ?", (owner, entry_id)
+        )
+    return cursor.rowcount == 1

@@ -225,8 +225,61 @@ h2 {
 }
 
 .entry {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
   padding: 16px 0;
   border-bottom: 1px solid var(--hairline);
+}
+
+.entry-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.entry-actions form {
+  margin: 0;
+}
+
+.text-button {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 15px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  text-decoration: underline;
+}
+
+.text-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.text-button.danger {
+  color: var(--danger);
+}
+
+.entry.editing {
+  display: block;
+  margin: 8px 0;
+  padding: 24px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 .entry-text,
@@ -365,5 +418,18 @@ h2 {
 
   .card {
     padding: 24px 20px;
+  }
+
+  .entry {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .entry-actions {
+    margin-left: -8px;
+  }
+
+  .entry.editing {
+    padding: 20px 16px;
   }
 }
