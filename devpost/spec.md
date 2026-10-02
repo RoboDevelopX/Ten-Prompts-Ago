@@ -90,7 +90,7 @@ Read this before writing any code. These are settled. Follow them unless I expli
 ## Don't repeat these
 - The export button sent an empty file when nothing was logged. Do not reintroduce this. Why: users ended up pasting a blank file.
 ```
-Rules: an intro that tells the agent how to treat the file; Decisions first, then Don't repeat these; newest first within each group; each item one line, the learner's sentence, then "Why: " plus the reason; a trailing period added if missing; an empty group is left out.
+Rules: an intro that tells the agent how to treat the file; Decisions first, then Don't repeat these; newest first within each group; each item one line, the learner's sentence, then "Why: " plus the reason; fixed bugs also get "Do not reintroduce this."; a trailing period added if missing (a trailing comma, semicolon, or colon becomes a period); an empty group is left out.
 PRD ref: `prd.md > Exporting CONTEXT.md`, `scope.md > The Unique Kernel`.
 
 ### Page template (`templates/index.html`)
@@ -160,5 +160,5 @@ Host config (e.g. `render.yaml`) is added in `6-ship` if Render is used.
 - **Flask + SQLite + plain HTML/CSS + a little JS** (learner, on agent recommendation): full control of the Apple-style look and in-place editing; accepted more code than Streamlit.
 - **Runs locally for the video, plus a public link** (learner): the link is for their resume.
 - **Render as the host** (agent recommendation, to confirm in `6-ship`): free, deploys from GitHub; tradeoff is sleep on idle and no persistent disk.
-- **Useful unknown (from the learner's story):** what makes a `CONTEXT.md` that an agent actually follows, given "my first `CONTEXT.md` was just a dump of entries, and the agent mostly ignored it." Approach chosen: grouped sections, an instruction line up top, short imperative items with the reason. **Checked during the build** by pasting a real export into a coding agent and asking for something that contradicts a logged decision; the result goes under `checklist.md > Revisions`.
+- **Useful unknown (from the learner's story):** what makes a `CONTEXT.md` that an agent actually follows, given "my first `CONTEXT.md` was just a dump of entries, and the agent mostly ignored it." Approach chosen: grouped sections, an instruction line up top, short imperative items with the reason. **Checked during slice 2** (`devpost/context-experiment.md`): six fresh agents got either no context, a plain notes dump, or the grouped export, plus a request that tempts a login. With no context, both added logins. With either the dump or the export, all four named the no-login decision and checked first. Writing decisions down made the difference; in this small test the grouped format did not beat a careful dump. Still open: whether the format matters with weaker agents or longer logs.
 - **Each visitor gets their own list** (learner, on agent recommendation): an anonymous cookie id scopes every entry, so strangers on the public link can't see or edit each other's entries. Tradeoff: an `owner` column and a cookie; clearing cookies means a fresh list.

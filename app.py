@@ -2,9 +2,10 @@
 
 import os
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, Response, redirect, render_template, request, url_for
 
 import db
+from context_export import build_context
 
 # Until each visitor gets their own list (slice 4), everything belongs to one local owner.
 LOCAL_OWNER = "local"
@@ -25,7 +26,7 @@ def create_app(config=None):
     def database():
         return app.config["DATABASE_PATH"]
 
-    def render_page(form=None, errors=None, status=200):
+    def render_page(form=None, errors=None, status=200, export_open=False):
         entries = db.list_entries(database(), LOCAL_OWNER)
         groups = {kind: [e for e in entries if e["kind"] == kind] for kind in db.KINDS}
         page = render_template(
@@ -36,12 +37,14 @@ def create_app(config=None):
             errors=errors or {},
             text_max=TEXT_MAX,
             reason_max=REASON_MAX,
+            export_open=export_open,
+            context=build_context(entries) if export_open else None,
         )
         return page, status
 
     @app.get("/")
     def index():
-        return render_page()
+        return render_page(export_open=request.args.get("export") == "1")
 
     @app.post("/entries")
     def add():
@@ -50,6 +53,18 @@ def create_app(config=None):
             return render_page(form=form, errors=errors, status=400)
         db.add_entry(database(), LOCAL_OWNER, form["kind"], form["text"], form["reason"])
         return redirect(url_for("index") + "#entries")
+
+    @app.get("/export/CONTEXT.md")
+    def download():
+        context = build_context(db.list_entries(database(), LOCAL_OWNER))
+        if context is None:
+            # Nothing logged: show the friendly message instead of an empty file.
+            return redirect(url_for("index", export=1) + "#export")
+        return Response(
+            context,
+            mimetype="text/markdown",
+            headers={"Content-Disposition": "attachment; filename=CONTEXT.md"},
+        )
 
     return app
 

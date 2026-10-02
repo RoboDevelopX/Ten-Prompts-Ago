@@ -106,3 +106,72 @@ def test_entries_survive_a_restart(db_path, client):
     html = restarted.get("/").get_data(as_text=True)
     assert entry_texts(html, "decision") == ["Use SQLite, not Postgres"]
     assert entry_texts(html, "bug") == ["Login page crept back in"]
+
+
+def test_export_button_is_shown_before_export_is_opened(client):
+    html = client.get("/").get_data(as_text=True)
+    assert 'href="/?export=1#export"' in html
+    assert "context-preview" not in html
+
+
+def test_export_with_nothing_logged_shows_message(client):
+    html = client.get("/?export=1").get_data(as_text=True)
+    assert "Nothing to export yet. Log a decision or a fixed bug first." in html
+    assert "context-preview" not in html
+
+
+def test_download_with_nothing_logged_redirects_to_message(client):
+    response = client.get("/export/CONTEXT.md")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/?export=1#export")
+
+
+def test_export_preview_shows_grouped_context(client):
+    add(client, "decision", "Use SQLite, not Postgres", "One user, no server to run")
+    add(client, "bug", "Export sent an empty file", "Users pasted a blank file")
+    html = client.get("/?export=1").get_data(as_text=True)
+    assert '<pre id="context-preview"' in html
+    assert "## Decisions\n- Use SQLite, not Postgres. Why: One user, no server to run." in html
+    assert "## Don&#39;t repeat these\n- Export sent an empty file. Do not reintroduce this." in html
+    assert 'data-copy-target="context-preview"' in html
+    assert 'href="/export/CONTEXT.md"' in html
+    # No `download` attribute: with it, a browser would save the empty-export
+    # redirect page as CONTEXT.md instead of showing the message.
+    assert re.search(r'<a [^>]*href="/export/CONTEXT.md"[^>]*\bdownload\b', html) is None
+
+
+def test_download_returns_the_same_file(client):
+    add(client, "decision", "Use SQLite, not Postgres", "One user")
+    add(client, "bug", "Export sent an empty file", "Users pasted a blank file")
+    response = client.get("/export/CONTEXT.md")
+    assert response.status_code == 200
+    assert response.headers["Content-Disposition"] == "attachment; filename=CONTEXT.md"
+    assert response.mimetype == "text/markdown"
+    body = response.get_data(as_text=True)
+    assert body.startswith("# Project context\n")
+    assert "- Use SQLite, not Postgres. Why: One user.\n" in body
+    assert "## Don't repeat these\n" in body
+
+
+def test_export_lists_newest_first(client):
+    add(client, "decision", "First", "r")
+    add(client, "decision", "Second", "r")
+    body = client.get("/export/CONTEXT.md").get_data(as_text=True)
+    assert body.index("Second") < body.index("First")
+
+
+def test_export_reflects_entries_added_later(client):
+    add(client, "decision", "Use SQLite", "One user")
+    first = client.get("/export/CONTEXT.md").get_data(as_text=True)
+    add(client, "bug", "Login page came back", "No login for v1")
+    second = client.get("/export/CONTEXT.md").get_data(as_text=True)
+    assert "Login page came back" not in first
+    assert "Login page came back" in second
+
+
+def test_export_escapes_html_in_preview(client):
+    add(client, "decision", "<img src=x onerror=alert(1)>", "r")
+    html = client.get("/?export=1").get_data(as_text=True)
+    assert "<img src=x" not in html
+    body = client.get("/export/CONTEXT.md").get_data(as_text=True)
+    assert "- <img src=x onerror=alert(1)>. Why: r.\n" in body

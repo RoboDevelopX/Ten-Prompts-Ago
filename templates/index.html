@@ -69,10 +69,28 @@
         {% endfor %}
       {% endif %}
     </section>
+
+    <section id="export" class="card export" aria-labelledby="export-heading">
+      <h2 id="export-heading">Export for your agent</h2>
+      <p class="hint">Paste it at the start of a session in Claude Code, Cursor, or any coding agent.</p>
+      {% if not export_open %}
+        <a class="button primary" href="{{ url_for('index', export=1) }}#export">Export CONTEXT.md</a>
+      {% elif context %}
+        <pre id="context-preview" class="preview" tabindex="0" aria-label="CONTEXT.md preview">{{ context }}</pre>
+        <div class="actions">
+          <button type="button" class="button primary" data-copy-target="context-preview">Copy</button>
+          <a class="button secondary" href="{{ url_for('download') }}">Download</a>
+        </div>
+        <p class="copy-status" role="status" aria-live="polite"></p>
+      {% else %}
+        <p class="empty-export" role="status">Nothing to export yet. Log a decision or a fixed bug first.</p>
+      {% endif %}
+    </section>
   </main>
 
   <footer class="footer">
     <p>Ten Prompts Ago keeps your decisions in one place, so your agent doesn't relitigate them.</p>
   </footer>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
 </html>
