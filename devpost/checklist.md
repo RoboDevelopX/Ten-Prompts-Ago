@@ -71,3 +71,7 @@ Reflection: not started
 Activity mode: not started
 
 ## Revisions
+
+- Entry text and reason now collapse line breaks and repeated spaces into one line, with 280/500 character caps — the slice 1 review found that browsers submit textarea line breaks as CRLF, so a reason the browser accepted at 500 characters reached the server as 501 and was rejected; one line per entry also matches the export format.
+- Red (`#d70015`) is also used for form validation errors, not only delete — the spec reserved red for delete, but slice 1 needed a visible error state; `spec.md > Look and Feel` updated.
+- Long words, paths and URLs in entries now wrap instead of pushing the page sideways on phones (`overflow-wrap: anywhere`), the unselected Decision/Fixed bug label was darkened to meet contrast, and high-contrast mode now shows which type is chosen — all found by the slice 1 review.

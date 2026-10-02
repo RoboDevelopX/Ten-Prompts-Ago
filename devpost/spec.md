@@ -55,7 +55,7 @@ Open http://127.0.0.1:5000. No API keys or accounts. The database file is create
 ## Look and Feel
 From `prd.md > Look and Feel` ("similar to the design of Apple's website").
 - **Font:** system stack `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif` (no web-font download). Large bold headline (~48px, tight letter-spacing), 17px body.
-- **Color:** page `#ffffff`, section backgrounds `#f5f5f7`, text `#1d1d1f`, secondary text `#6e6e73`, accent blue `#0071e3` for primary buttons and links, red `#d70015` only for delete.
+- **Color:** page `#ffffff`, section backgrounds `#f5f5f7`, text `#1d1d1f`, secondary text `#6e6e73`, accent blue `#0071e3` for primary buttons and links, red `#d70015` only for delete and for form validation errors.
 - **Shape:** cards with ~18px radius, pill buttons (fully rounded), hairline `#d2d2d7` dividers, almost no shadows.
 - **Layout:** centered column (~720px max), generous vertical spacing between sections, works on a phone width.
 - **Copy tone:** short, calm, plain ("Log a decision.", "Nothing to export yet.").
@@ -69,7 +69,7 @@ Creates the app, opens the database, defines the routes:
 - `POST /entries`: add an entry. Implements `prd.md > Adding an entry`.
 - `POST /entries/<id>/edit`: save an edit. `POST /entries/<id>/delete`: delete. Implements `prd.md > Editing and deleting an entry`.
 - `GET /export/CONTEXT.md`: download the file (`Content-Disposition: attachment; filename=CONTEXT.md`). With no entries, redirects to `/?export=1#export`, which shows the empty message. Implements `prd.md > Exporting CONTEXT.md`.
-Validation: trims whitespace; sentence and reason required; type must be `decision` or `bug`; unknown ids (or another visitor's ids) return 404.
+Validation: collapses line breaks and repeated spaces to single spaces (each entry is one line in the export); sentence max 280 characters, reason max 500; sentence and reason required; type must be `decision` or `bug`; unknown ids (or another visitor's ids) return 404.
 **Visitor id:** before each request, read the `tpa_visitor` cookie; if missing, create a random id (`uuid4`) and set it on the response (HttpOnly, SameSite=Lax, one year). Every database call is scoped to that id. Implements the learner's per-visitor choice.
 
 ### Storage (`db.py`)
